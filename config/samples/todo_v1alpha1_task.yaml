@@ -1,0 +1,10 @@
+apiVersion: todo.jakuboskera.dev/v1alpha1
+kind: Task
+metadata:
+  labels:
+    app.kubernetes.io/name: todo-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: task-sample
+spec:
+  text: Sample task
+  isDone: false

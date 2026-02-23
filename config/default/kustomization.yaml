@@ -1,0 +1,9 @@
+---
+namespace: todo-operator-system
+
+namePrefix: todo-operator-
+
+resources:
+  - ../crd
+  - ../rbac
+  - ../manager

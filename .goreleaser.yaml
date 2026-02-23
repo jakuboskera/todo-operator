@@ -1,0 +1,78 @@
+---
+version: 2
+
+project_name: todo-operator
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+# CRD YAML is included in the GitHub release as extra files.
+release:
+  extra_files:
+    - glob: config/crd/bases/*.yaml
+
+dockers:
+  - image_templates:
+      - "jakuboskera/todo-operator:{{ .Tag }}-amd64"
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/jakuboskera/todo-operator"
+
+  - image_templates:
+      - "jakuboskera/todo-operator:{{ .Tag }}-arm64"
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/jakuboskera/todo-operator"
+
+docker_manifests:
+  - name_template: "jakuboskera/todo-operator:{{ .Tag }}"
+    image_templates:
+      - "jakuboskera/todo-operator:{{ .Tag }}-amd64"
+      - "jakuboskera/todo-operator:{{ .Tag }}-arm64"
+  - name_template: "jakuboskera/todo-operator:latest"
+    image_templates:
+      - "jakuboskera/todo-operator:{{ .Tag }}-amd64"
+      - "jakuboskera/todo-operator:{{ .Tag }}-arm64"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+      - "Merge branch"
+  groups:
+    - title: Features
+      regexp: "^feat"
+      order: 0
+    - title: Bug Fixes
+      regexp: "^fix"
+      order: 1
+    - title: Others
+      order: 999

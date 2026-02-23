@@ -1,0 +1,36 @@
+name: Lint
+
+"on":
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    name: Run on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL \
+            https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+            | sh -s -- -b "$(go env GOPATH)/bin" v2.8.0
+
+      - name: Build custom golangci-lint with plugins
+        run: |
+          GOPATH="$(go env GOPATH)"
+          golangci-lint custom \
+            --destination "${GOPATH}/bin" \
+            --name golangci-lint-custom
+          mv "${GOPATH}/bin/golangci-lint-custom" \
+            "${GOPATH}/bin/golangci-lint"
+
+      - name: Run linter
+        run: golangci-lint run
